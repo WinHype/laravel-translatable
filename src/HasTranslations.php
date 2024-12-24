@@ -151,7 +151,14 @@ trait HasTranslations
 
         $translations[$locale] = $value;
 
-        $this->attributes[$key] = json_encode($translations, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (Str::contains($key, '->')) {
+            $keyValues = explode('->', $key);
+            array_splice($keyValues, 1, 0, $locale);
+            $key = implode('->', $keyValues);
+            $this->attributes[$key] = $value;
+        } else {
+            $this->attributes[$key] = json_encode($translations, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
 
         event(new TranslationHasBeenSetEvent($this, $key, $locale, $oldValue, $value));
 
@@ -218,6 +225,10 @@ trait HasTranslations
 
     public function isTranslatableAttribute(string $key): bool
     {
+        if (Str::contains($key, '->')) {
+            $key = explode('->', $key)[0];
+        }
+        
         return in_array($key, $this->getTranslatableAttributes());
     }
 
