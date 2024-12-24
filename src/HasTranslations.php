@@ -154,8 +154,16 @@ trait HasTranslations
         if (Str::contains($key, '->')) {
             $keyValues = explode('->', $key);
             array_splice($keyValues, 1, 0, $locale);
-            $key = implode('->', $keyValues);
-            $this->attributes[$key] = $value;
+            $lastValue = $keyValues[count($keyValues) - 1];
+
+            if (is_numeric($lastValue)) {
+                array_pop($keyValues);
+                $key = implode('->', $keyValues) . '[' . $lastValue . ']';
+                $this->attributes[$key] = $value;
+            } else {
+                $key = implode('->', $keyValues);
+                $this->attributes[$key] = $value;
+            }
         } else {
             $this->attributes[$key] = json_encode($translations, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
